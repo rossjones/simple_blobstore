@@ -1,0 +1,5 @@
+syntax: glob
+bin/
+pkg/
+src/github.com
+.DS_Store
