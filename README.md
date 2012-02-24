@@ -13,7 +13,7 @@ goconfig - code at <https://github.com/kless/goconfig>
 ## Installation
 
 ```
-go get github.com/kless/goconfig/config  
+go get github.com/kless/goconfig/config
 
 
 ```
@@ -35,12 +35,12 @@ There are no permissions or checks.
 * If GUID matches metadata then it is associated, either way the blob will be stored.
 
 
-### Reading  
+### Reading
 
 Still no permissions.
 
-* GET to /data/GUID will return the data written.  If there was no metadata written then the content-type will be application/octet-stream.
-* GET to /metadata/GUID will return the appropriate metadata, if it exists.
+* **GET** to /data/GUID will return the data written.  If there was no metadata written then the content-type will be application/octet-stream.
+* **GET** to /metadata/GUID will return the appropriate metadata, if it exists.
 
 
 ### TODO

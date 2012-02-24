@@ -19,14 +19,16 @@ package main
 
 import (
     "io"
+    "log"
     "net/http"
 )
 
 func MetadataServer(w http.ResponseWriter, req *http.Request) {
+    log.Print(req.Method)
     io.WriteString(w, "Metadata\n")
 }
 
 func DataServer(w http.ResponseWriter, req *http.Request) {
+    log.Print(req.Method)
     io.WriteString(w, "Data\n")
 }
-
