@@ -25,6 +25,7 @@ import (
     "net/http"
 )
 
+var StorageLocation = ""
 var configFile = flag.String("c", "config.ini", "Location of the config file")
 
 func main() {
@@ -38,6 +39,12 @@ func main() {
     host, _ := c.String("network", "listen-ip")
     port, _ := c.Int("network", "listen-port")
     listen := fmt.Sprintf("%s:%d", host, port)
+
+    StorageLocation, slErr := c.String("storage", "location")
+    if slErr != nil {
+        StorageLocation = "./"
+    }
+    log.Println("Storing/Retrieving data from ", StorageLocation)
 
     http.HandleFunc("/metadata", MetadataServer)
     http.HandleFunc("/data", DataServer)

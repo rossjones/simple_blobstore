@@ -19,16 +19,53 @@ package main
 
 import (
     "io"
-    "log"
+    //    "log"
     "net/http"
 )
 
+var metadataFuncs = map[string]http.HandlerFunc{
+    "GET":  getMetaData,
+    "POST": postMetaData,
+}
+var dataFuncs = map[string]http.HandlerFunc{
+    "GET":  getData,
+    "POST": postData,
+}
+
+func unsupportedMethod(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, req.Method+" is unsupported\n")
+}
+
+func getMetaData(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "GET Metadata\n")
+}
+
+func postMetaData(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "POST Metadata\n")
+}
+
+func getData(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "GET Data\n")
+}
+
+func postData(w http.ResponseWriter, req *http.Request) {
+    io.WriteString(w, "POST Data\n")
+}
+
 func MetadataServer(w http.ResponseWriter, req *http.Request) {
-    log.Print(req.Method)
-    io.WriteString(w, "Metadata\n")
+    _, present := metadataFuncs[req.Method]
+    if present {
+        metadataFuncs[req.Method](w, req)
+    } else {
+        unsupportedMethod(w, req)
+    }
 }
 
 func DataServer(w http.ResponseWriter, req *http.Request) {
-    log.Print(req.Method)
-    io.WriteString(w, "Data\n")
+    _, present := dataFuncs[req.Method]
+    if present {
+        dataFuncs[req.Method](w, req)
+    } else {
+        unsupportedMethod(w, req)
+    }
 }
