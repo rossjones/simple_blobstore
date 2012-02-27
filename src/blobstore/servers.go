@@ -68,6 +68,9 @@ func postData(w http.ResponseWriter, req *http.Request) {
 
     log.Println("Reading", handler.Filename)
 
+    // f,_ = Can use file.Open()
+    // or we can use
+    // file which is a Reader
     data, err := ioutil.ReadAll(file)
     if err != nil {
         log.Println(err)
