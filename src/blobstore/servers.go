@@ -19,7 +19,8 @@ package main
 
 import (
     "io"
-    //    "log"
+    "io/ioutil"
+    "log"
     "net/http"
 )
 
@@ -48,8 +49,32 @@ func getData(w http.ResponseWriter, req *http.Request) {
     io.WriteString(w, "GET Data\n")
 }
 
+
+// Reads a form variable called 'file' which it is hoped is
+// an actual file.
+//
+// Currently loads file into memory, but obviously this won't work for
+// anything other than tiny files.
+//
+// TODO: Make sure we ready chunks as we write them to disk
+// Testing with curl --form file=@INPUTFILE --form press=OK http://localhost:2112/data
 func postData(w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, "POST Data\n")
+
+    file, handler, err := req.FormFile("file")
+    if err != nil {
+        log.Println(err)
+        return
+    }
+
+    log.Println("Reading", handler.Filename)
+
+    data, err := ioutil.ReadAll(file)
+    if err != nil {
+        log.Println(err)
+    }
+
+    length := len(data)
+    name := handler.Filename
 }
 
 func MetadataServer(w http.ResponseWriter, req *http.Request) {
