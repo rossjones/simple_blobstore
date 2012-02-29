@@ -19,15 +19,12 @@ package main
 
 import (
     "io"
-    "io/ioutil"
+    "os"
     "log"
     "net/http"
+    "path"
 )
 
-var metadataFuncs = map[string]http.HandlerFunc{
-    "GET":  getMetaData,
-    "POST": postMetaData,
-}
 var dataFuncs = map[string]http.HandlerFunc{
     "GET":  getData,
     "POST": postData,
@@ -37,57 +34,68 @@ func unsupportedMethod(w http.ResponseWriter, req *http.Request) {
     io.WriteString(w, req.Method+" is unsupported\n")
 }
 
-func getMetaData(w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, "GET Metadata\n")
-}
-
-func postMetaData(w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, "POST Metadata\n")
-}
-
 func getData(w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, "GET Data\n")
-}
+    guid := req.FormValue("id")
 
+    target := path.Join(StorageLocation, guid, "blob")
+    _, err := os.Stat(target)
+    if err != nil {
+        log.Fatal("Data not exist: ", err)
+        return
+    }
+
+    output, err := os.Open( target )
+    if err != nil {
+        log.Fatal("Can't open target file ", target, " ", err)
+        return
+    }
+    defer output.Close()
+
+
+    _, err = io.Copy(w, output)
+    if err != nil {
+        return
+    }
+}
 
 // Reads a form variable called 'file' which it is hoped is
 // an actual file.
 //
 // Currently loads file into memory, but obviously this won't work for
 // anything other than tiny files.
-//
-// TODO: Make sure we ready chunks as we write them to disk
-// Testing with curl --form file=@INPUTFILE --form press=OK http://localhost:2112/data
 func postData(w http.ResponseWriter, req *http.Request) {
 
     file, handler, err := req.FormFile("file")
     if err != nil {
-        log.Println(err)
+        log.Fatal(err)
+        return
+    }
+    defer file.Close()
+
+    name := handler.Filename
+    log.Println(name)
+
+    guid := makeGuid()
+    target_folder := path.Join(StorageLocation, guid)
+    err = os.Mkdir(target_folder, 0777)
+
+    target_file := path.Join(target_folder, "blob")
+    output, err := os.Create( target_file )
+    if err != nil {
+        log.Fatal("Can't create target file ", target_file, " ", err)
+        return
+    }
+    defer output.Close()
+
+    _, err = io.Copy(output, file)
+    if err != nil {
+        log.Fatal("Can't copy to target file", target_file)
         return
     }
 
-    log.Println("Reading", handler.Filename)
-
-    // f,_ = Can use file.Open()
-    // or we can use
-    // file which is a Reader
-    data, err := ioutil.ReadAll(file)
-    if err != nil {
-        log.Println(err)
-    }
-
-    length := len(data)
-    name := handler.Filename
+    io.WriteString( w, guid )
 }
 
-func MetadataServer(w http.ResponseWriter, req *http.Request) {
-    _, present := metadataFuncs[req.Method]
-    if present {
-        metadataFuncs[req.Method](w, req)
-    } else {
-        unsupportedMethod(w, req)
-    }
-}
 
 func DataServer(w http.ResponseWriter, req *http.Request) {
     _, present := dataFuncs[req.Method]

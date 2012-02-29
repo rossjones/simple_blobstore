@@ -23,6 +23,7 @@ import (
     "github.com/kless/goconfig/config"
     "log"
     "net/http"
+    "os"
 )
 
 var StorageLocation = ""
@@ -40,14 +41,18 @@ func main() {
     port, _ := c.Int("network", "listen-port")
     listen := fmt.Sprintf("%s:%d", host, port)
 
-    StorageLocation, slErr := c.String("storage", "location")
-    if slErr != nil {
+    StorageLocation, err = c.String("storage", "location")
+    if err != nil {
         StorageLocation = "./"
     }
     log.Println("Storing/Retrieving data from ", StorageLocation)
 
-    http.HandleFunc("/metadata", MetadataServer)
-    http.HandleFunc("/data", DataServer)
+    _, err = os.Stat(StorageLocation)
+    if err != nil {
+        log.Fatal("Folder not exist: ", err)
+    }
+
+    http.HandleFunc("/", DataServer)
 
     log.Println("Server listening: ", listen)
     err = http.ListenAndServe(listen, nil)
