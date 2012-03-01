@@ -25,22 +25,19 @@ When this is done the following should be true:
 
 ### Writing
 
-All writes are going to just write to a folder named after the user supplied GUID. POSTs to existing GUIDs will overwrite the data.
+All writes are going to just write to a folder named after the user supplied GUID. 
 
 There are no permissions or checks.
 
-* **POST** some JSON to /metadata/GUID
-
-* **POST** a blob to /data/GUID
-* If GUID matches metadata then it is associated, either way the blob will be stored.
+* **POST** a blob to /data/
+* GUID returns as entirety of the body response.
 
 
 ### Reading
 
 Still no permissions.
 
-* **GET** to /data/GUID will return the data written.  If there was no metadata written then the content-type will be application/octet-stream.
-* **GET** to /metadata/GUID will return the appropriate metadata, if it exists.
+* **GET** to /data/?id=GUID will return the data written.  If there was no metadata written then the content-type will be application/octet-stream.
 
 
 ### TODO
