@@ -36,17 +36,22 @@ func unsupportedMethod(w http.ResponseWriter, req *http.Request) {
 
 func getData(w http.ResponseWriter, req *http.Request) {
     guid := req.FormValue("id")
+    if guid == "" {
+        http.NotFound(w,req)
+        return;
+    }
 
     target := path.Join(StorageLocation, guid, "blob")
     _, err := os.Stat(target)
     if err != nil {
-        log.Fatal("Data not exist: ", err)
+        log.Println("Data not exist: ", err)
+        http.NotFound(w,req)
         return
     }
 
     output, err := os.Open( target )
     if err != nil {
-        log.Fatal("Can't open target file ", target, " ", err)
+        log.Println("Can't open target file ", target, " ", err)
         return
     }
     defer output.Close()
